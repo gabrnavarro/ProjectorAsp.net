@@ -1,13 +1,16 @@
 ﻿@model IEnumerable<ProjectorCSharp.Models.Project>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Projects";
 }
 
 <h2>Index</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    @Html.ActionLink("Create New Project", "Create")
+</p>
+<p>
+    @Html.ActionLink("Create New Person", "Create", "People")
 </p>
 <table class="table">
     <tr>
@@ -43,7 +46,10 @@
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |
             @Html.ActionLink("Details", "Details", new { id=item.ID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ID })
+            @Html.ActionLink("Delete", "Delete", new { id=item.ID })  |
+            @Html.ActionLink("Assign", "Assign", new { id = item.ID })  
+
+
         </td>
     </tr>
 }

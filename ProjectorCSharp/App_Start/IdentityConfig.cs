@@ -44,46 +44,20 @@ namespace ProjectorCSharp
         {
             var manager = new ApplicationUserManager(new UserStore<ApplicationUser>(context.Get<ApplicationDbContext>()));
             // Configure validation logic for usernames
-            manager.UserValidator = new UserValidator<ApplicationUser>(manager)
+            manager.UserValidator = new CustomUserValidator(manager)
             {
-                AllowOnlyAlphanumericUserNames = false,
-                RequireUniqueEmail = true
+                
+                RequireUniqueEmail = true,
+                MaxLength = 200,
             };
 
             // Configure validation logic for passwords
-            manager.PasswordValidator = new PasswordValidator
+            manager.PasswordValidator = new CustomPasswordValidator
             {
-                RequiredLength = 6,
-                RequireNonLetterOrDigit = true,
-                RequireDigit = true,
-                RequireLowercase = true,
-                RequireUppercase = true,
+                RequiredLength = 7,
+                MaxLength = 11,
             };
 
-            // Configure user lockout defaults
-            manager.UserLockoutEnabledByDefault = true;
-            manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            manager.MaxFailedAccessAttemptsBeforeLockout = 5;
-
-            // Register two factor authentication providers. This application uses Phone and Emails as a step of receiving a code for verifying the user
-            // You can write your own provider and plug it in here.
-            manager.RegisterTwoFactorProvider("Phone Code", new PhoneNumberTokenProvider<ApplicationUser>
-            {
-                MessageFormat = "Your security code is {0}"
-            });
-            manager.RegisterTwoFactorProvider("Email Code", new EmailTokenProvider<ApplicationUser>
-            {
-                Subject = "Security Code",
-                BodyFormat = "Your security code is {0}"
-            });
-            manager.EmailService = new EmailService();
-            manager.SmsService = new SmsService();
-            var dataProtectionProvider = options.DataProtectionProvider;
-            if (dataProtectionProvider != null)
-            {
-                manager.UserTokenProvider = 
-                    new DataProtectorTokenProvider<ApplicationUser>(dataProtectionProvider.Create("ASP.NET Identity"));
-            }
             return manager;
         }
     }
@@ -106,4 +80,54 @@ namespace ProjectorCSharp
             return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
         }
     }
+
+
+    public class CustomPasswordValidator : PasswordValidator
+    {
+        public int MaxLength { get; set; }
+
+        public override async Task<IdentityResult> ValidateAsync(string item)
+        {
+            IdentityResult result = await base.ValidateAsync(item);
+
+            var errors = result.Errors.ToList();
+
+            if (string.IsNullOrEmpty(item) || item.Length > MaxLength)
+            {
+                errors.Add(string.Format("Password length can't exceed {0}", MaxLength));
+            }
+
+            return await Task.FromResult(errors.Count() == 0
+             ? IdentityResult.Success
+             : IdentityResult.Failed(errors.ToArray()));
+        }
+    }
+
+    public class CustomUserValidator : UserValidator<ApplicationUser>
+    {
+        public int MaxLength { get; set; }
+        public CustomUserValidator(ApplicationUserManager manager)
+            : base(manager)
+        {
+        }
+
+        public override async Task<IdentityResult> ValidateAsync(ApplicationUser user)
+        {
+            IdentityResult result = await base.ValidateAsync(user);
+            var errors = result.Errors.ToList();
+
+            if (string.IsNullOrEmpty(user.Email) || user.Email.Length > MaxLength || user.Email.Length < 5)
+            {
+                errors.Add(string.Format("Email length must be between 5 and {0}", MaxLength));
+            }
+            result = new IdentityResult(errors);
+            return result;
+
+
+        }
+    }
+
 }
+
+
+

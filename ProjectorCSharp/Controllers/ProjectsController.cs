@@ -8,9 +8,11 @@ using System.Web;
 using System.Web.Mvc;
 using ProjectorCSharp.DAL;
 using ProjectorCSharp.Models;
+using System.Data.SqlClient;
 
 namespace ProjectorCSharp.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private ProjectorContext db = new ProjectorContext();
@@ -18,9 +20,44 @@ namespace ProjectorCSharp.Controllers
         // GET: Projects
         public ActionResult Index()
         {
+            
+
             return View(db.Projects.ToList());
         }
 
+        public ActionResult Assign(int id)
+        {
+            AssignViewModel vm = new AssignViewModel();
+            vm.Persons = db.People.ToList();
+            vm.Projects = db.Projects.ToList();
+            vm.Assignments = db.Assignments.ToList();
+            int pageid = id;
+            ViewBag.id = pageid;
+            var persons = new List<Person>();
+            using (SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB; AttachDbFilename='C:\Users\Asus\Documents\Visual Studio 2015\Projects\ProjectorCSharp\ProjectorCSharp\App_Data\ProjectorContext.mdf';Integrated Security=True;Connect Timeout=30; Initial Catalog =ProjectorContext"))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT * from People where Lastname = 'Pascua'", conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                Person p = new Person();
+                                p.ID = reader.GetInt32(reader.GetOrdinal("ID"));
+                                p.Firstname = reader.GetString(reader.GetOrdinal("Firstname"));
+                                p.Lastname = reader.GetString(reader.GetOrdinal("Lastname"));
+                                persons.Add(p);
+                            }
+                        }
+                    }
+                }
+            }
+            vm.Persons = persons;
+            return View(vm);
+        }
         // GET: Projects/Details/5
         public ActionResult Details(int? id)
         {

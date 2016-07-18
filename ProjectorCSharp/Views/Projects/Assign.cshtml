@@ -1,0 +1,19 @@
+﻿@model ProjectorCSharp.Models.AssignViewModel
+
+@{
+    ViewBag.Title = "Assign";
+}
+
+<h2>Project Assignments - Smartforms</h2>
+
+
+<p>@ViewBag.id</p>
+
+<div>
+
+@foreach(var item in Model.Persons)
+{
+    <p>@Html.DisplayFor(modelItem => item.Firstname)  @Html.DisplayFor(modelItem => item.Lastname) <a> Remove</a></p>
+}
+
+</div>

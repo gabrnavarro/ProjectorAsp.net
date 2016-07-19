@@ -36,7 +36,7 @@ namespace ProjectorCSharp.Controllers
             var persons = new List<Person>();
             using (SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB; AttachDbFilename='C:\Users\Asus\Documents\Visual Studio 2015\Projects\ProjectorCSharp\ProjectorCSharp\App_Data\ProjectorContext.mdf';Integrated Security=True;Connect Timeout=30; Initial Catalog =ProjectorContext"))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT * from People where Lastname = 'Pascua'", conn))
+                using (SqlCommand cmd = new SqlCommand("Select assign.ProjectID, person1.Firstname, person1.Lastname from Assignments as assign inner join People as person1 ON person1.ID=assign.PersonID where assign.ProjectID = '" + pageid+ "'", conn))
                 {
                     conn.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -46,7 +46,7 @@ namespace ProjectorCSharp.Controllers
                             while (reader.Read())
                             {
                                 Person p = new Person();
-                                p.ID = reader.GetInt32(reader.GetOrdinal("ID"));
+                                p.ID = reader.GetInt32(reader.GetOrdinal("ProjectID"));
                                 p.Firstname = reader.GetString(reader.GetOrdinal("Firstname"));
                                 p.Lastname = reader.GetString(reader.GetOrdinal("Lastname"));
                                 persons.Add(p);
